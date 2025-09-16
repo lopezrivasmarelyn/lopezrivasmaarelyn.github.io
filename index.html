@@ -1,0 +1,705 @@
+<!DOCTYPE html> 
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GLOMOR | Boutique de Vestidos de Novia</title>
+
+  <!-- TailwindCSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <!-- SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <!-- AOS Animations -->
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+
+  <!-- Estilos personalizados -->
+  <style>
+    /* Variables de color */
+    :root {
+      --primary: #F9F5F0;
+      --secondary: #D4B572;
+      --accent: #BF9B30;
+      --dark: #333333;
+      --light: #FFFFFF;
+    }
+
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background-color: var(--primary);
+      color: var(--dark);
+      overflow-x: hidden;
+    }
+
+    h1, h2, h3, h4, h5, h6 { font-family: 'Playfair Display', serif; }
+
+    /* Header */
+    .header-logo { max-height: 80px; transition: all 0.3s ease; }
+
+    /* Sidebar */
+    .sidebar {
+      background-color: rgba(255, 255, 255, 0.95);
+      border-right: 1px solid #f0e6d9;
+      box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+      transition: all 0.3s ease;
+    }
+    .sidebar-link { position: relative; transition: all 0.3s ease; }
+    .sidebar-link::after {
+      content: '';
+      position: absolute;
+      width: 0;
+      height: 1px;
+      bottom: 0;
+      left: 0;
+      background-color: var(--accent);
+      transition: width 0.3s ease;
+    }
+    .sidebar-link:hover::after, .sidebar-link.active::after { width: 100%; }
+
+    /* Botones */
+    .btn-primary {
+      background-color: var(--accent);
+      color: var(--light);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      z-index: 1;
+    }
+    .btn-primary:hover {
+      background-color: var(--secondary);
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(191, 155, 48, 0.3);
+    }
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%; width: 100%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: left 0.7s; z-index: -1;
+    }
+    .btn-primary:hover::before { left: 100%; }
+
+    /* Formularios */
+    .form-input { border: 1px solid #E5D9C2; transition: all 0.3s ease; }
+    .form-input:focus {
+      border-color: var(--secondary);
+      box-shadow: 0 0 0 3px rgba(212, 181, 114, 0.2);
+    }
+
+    /* Tarjetas y efectos */
+    .card { transition: all 0.3s ease; border: 1px solid rgba(212, 181, 114, 0.2); }
+    .card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+
+    /* Pantalla bienvenida */
+    .welcome-screen {
+      background: linear-gradient(rgba(249, 245, 240, 0.8), rgba(249, 245, 240, 0.8)), url('https://cdn.pixabay.com/photo/2016/11/18/14/15/bridal-gown-1834928_1280.jpg') center/cover no-repeat;
+      height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 0 20px;
+    }
+    .welcome-title { font-size: 3rem; margin-bottom: 1.5rem; opacity: 0; animation: fadeIn 1.5s ease forwards; }
+    .welcome-subtitle { font-size: 1.25rem; margin-bottom: 2.5rem; opacity: 0; animation: fadeIn 1.5s ease 0.5s forwards; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Área de contenido */
+    .content-area { min-height: calc(100vh - 80px); }
+
+    /* Loader */
+    .loader {
+      width: 48px; height: 48px; border: 3px solid var(--secondary); border-radius: 50%; display: inline-block; position: relative; box-sizing: border-box; animation: rotation 1s linear infinite;
+    }
+    .loader::after {
+      content: ''; box-sizing: border-box; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+      width: 40px; height: 40px; border-radius: 50%; border: 3px solid transparent; border-bottom-color: var(--accent);
+    }
+    @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    /* Opciones de diseño */
+    .design-options { max-height: 0; overflow: hidden; transition: max-height 0.5s ease; }
+    .design-options.show { max-height: 800px; }
+
+    /* Páginas */
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* Vestidos */
+    .vestido-item img { transition: all 0.5s ease; }
+    .vestido-item:hover img { transform: scale(1.05); }
+    .vestido-overlay {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      background: linear-gradient(transparent, rgba(0,0,0,0.7)); color: white; opacity: 0; transition: all 0.3s ease;
+    }
+    .vestido-item:hover .vestido-overlay { opacity: 1; }
+
+    /* Tooltip */
+    .tooltip-trigger { position: relative; cursor: help; }
+  </style>
+</head>
+<body>
+<!-- Welcome Screen -->
+<div id="welcome-screen" class="welcome-screen">
+  <div class="flex justify-center">
+    <h1 class="welcome-title" data-aos="fade-up">GLOMOR</h1>
+  </div>
+  <p class="welcome-subtitle" data-aos="fade-up" data-aos-delay="200">Creando el vestido de tus sueños</p>
+  <button id="enter-btn" class="btn-primary px-8 py-3 rounded-lg text-lg font-semibold" data-aos="fade-up" data-aos-delay="400">
+    Entrar a la Boutique <i class="fas fa-chevron-right ml-2"></i>
+  </button>
+</div>
+<!-- Main App (Initially Hidden) -->
+<div id="main-app" class="hidden">
+  <!-- Header -->
+  <header class="bg-white shadow-sm fixed top-0 left-0 right-0 z-10">
+    <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+      <div class="flex items-center">
+        <img src="boutique.jpg" alt="GLOMOR" class="header-logo">
+      </div>
+      </div>
+  </header>
+  <!-- Sidebar and Content -->
+  <div class="flex pt-[86px] min-h-screen">
+    <!-- Sidebar -->
+    <div class="sidebar w-[250px] fixed h-full py-8 px-4">
+      <nav class="flex flex-col space-y-6">
+        <a href="javascript:void(0)" class="sidebar-link py-2 px-4 text-gray-700 hover:text-accent flex items-center active" data-page="inicio">
+          <i class="fas fa-home mr-3"></i> Inicio
+        </a>
+        <a href="javascript:void(0)" class="sidebar-link py-2 px-4 text-gray-700 hover:text-accent flex items-center" data-page="catalogo">
+          <i class="fas fa-book-open mr-3"></i> Catálogo
+        </a>
+        <a href="javascript:void(0)" class="sidebar-link py-2 px-4 text-gray-700 hover:text-accent flex items-center active" data-page="mision-vision">
+          <i class="fas fa-star mr-3"style="color: black; font-size: 20px;"></i> Misión y Visión
+        </a>
+        
+        <a href="javascript:void(0)" class="sidebar-link py-2 px-4 text-gray-700 hover:text-accent flex items-center" data-page="contacto">
+          <i class="fas fa-envelope mr-3"></i> Contacto
+        </a>
+      </nav>
+      <div class="mt-auto pt-8 px-4">
+        <p class="text-sm text-gray-500 italic">
+          "Cada vestido cuenta una historia, déjanos contar la tuya"
+        </p>
+      </div>
+    </div>
+    <!-- Content Area -->
+    <div class="ml-[250px] flex-grow p-8">
+      <!-- Inicio Page -->
+      <div id="inicio" class="page active">
+        <div class="max-w-3xl mx-auto text-center">
+          <h1 class="text-4xl mb-6 font-playfair" data-aos="fade-up">Bienvenida a GLOMOR</h1>
+          <p class="text-lg mb-10 text-gray-600" data-aos="fade-up" data-aos-delay="200">
+            Donde cada vestido es una obra de arte diseñada para el día más especial de tu vida.
+          </p>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">
+            <div data-aos="fade-right" data-aos-delay="300" class="bg-white p-8 rounded-lg shadow-lg text-center relative overflow-hidden">
+              <div class="absolute top-0 right-0 w-20 h-20 bg-accent opacity-10 rounded-full transform translate-x-10 -translate-y-10"></div>
+              <i class="fas fa-tshirt text-4xl text-accent mb-4"></i>
+              <h3 class="text-2xl mb-4">Pedir tu Vestido</h3>
+              <p class="text-gray-600 mb-6">Crea el vestido de tus sueños con nuestro equipo de diseñadores expertos.</p>
+              <button id="pedir-vestido-btn" class="btn-primary w-full py-3 rounded-lg">
+                Comenzar
+              </button>
+            </div>
+            <div data-aos="fade-left" data-aos-delay="400" class="bg-white p-8 rounded-lg shadow-lg text-center relative overflow-hidden">
+              <div class="absolute top-0 right-0 w-20 h-20 bg-accent opacity-10 rounded-full transform translate-x-10 -translate-y-10"></div>
+              <i class="fas fa-paint-brush text-4xl text-accent mb-4"></i>
+              <h3 class="text-2xl mb-4">Diseñar tu Vestido</h3>
+              <p class="text-gray-600 mb-6">Personaliza cada detalle con nuestra herramienta de diseño interactiva.</p>
+              <button id="disenar-vestido-btn" class="btn-primary w-full py-3 rounded-lg">
+                Diseñar ahora
+              </button>
+            </div>
+          </div>
+          <div class="mt-16 p-6 bg-white rounded-lg shadow-sm" data-aos="fade-up" data-aos-delay="500">
+            <h3 class="text-2xl mb-3">¿Por qué elegirnos?</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+              <div class="text-center">
+                <i class="fas fa-gem text-2xl text-accent mb-2"></i>
+                <h4 class="text-lg font-semibold">Calidad Premium</h4>
+                <p class="text-gray-600 text-sm">Materiales de la más alta calidad para tu día especial.</p>
+              </div>
+              <div class="text-center">
+                <i class="fas fa-hand-holding-heart text-2xl text-accent mb-2"></i>
+                <h4 class="text-lg font-semibold">Hecho a mano</h4>
+                <p class="text-gray-600 text-sm">Cada vestido está elaborado con dedicación y amor.</p>
+              </div>
+              <div class="text-center">
+                <i class="fas fa-user-check text-2xl text-accent mb-2"></i>
+                <h4 class="text-lg font-semibold">Experiencia única</h4>
+                <p class="text-gray-600 text-sm">Te acompañamos en cada paso de tu elección.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+              <!-- Catalogo Page -->
+        <div id="catalogo" class="page">
+          <h1 class="text-4xl mb-6 font-playfair text-center" data-aos="fade-up">Nuestros Vestidos</h1>
+          <p class="text-lg mb-10 text-gray-600 text-center max-w-3xl mx-auto" data-aos="fade-up" data-aos-delay="200">
+            Explora nuestra colección exclusiva de vestidos de novia diseñados para realzar tu belleza natural en tu día especial.
+          </p>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Vestido 1 -->
+            <div class="vestido-item overflow-hidden rounded-lg shadow-md bg-white" data-aos="fade-up" data-aos-delay="100">
+              <div class="relative overflow-hidden">
+                <img src="con cronolina.jpeg" alt="Vestido Romántico" class="w-full h-[300px] object-cover">
+                <div class="vestido-overlay p-4">
+                  <p class="text-sm">Vestido de seda y pedrería de cristal</p>
+                </div>
+              </div>
+              <div class="p-4">
+                <h3 class="text-xl font-semibold mb-2">Vestido de Seda con crinolina</h3>
+                <p class="text-gray-600 text-sm">Elegante vestido con detalles de encaje francés y escote fabuloso.</p>
+              </div>
+            </div>
+            
+            <!-- Vestido 2 -->
+            <div class="vestido-item overflow-hidden rounded-lg shadow-md bg-white" data-aos="fade-up" data-aos-delay="200">
+              <div class="relative overflow-hidden">
+                <img src="encaje.jpeg" alt="Vestido Clásico" class="w-full h-[300px] object-cover">
+                <div class="vestido-overlay p-4">
+                  <p class="text-sm">Diseño de encaje de parís</p>
+                </div>
+              </div>
+              <div class="p-4">
+                <h3 class="text-xl font-semibold mb-2">Vestido de Encaje</h3>
+                <p class="text-gray-600 text-sm">Vestido clásico con encaje y espalda cubierta.</p>
+              </div>
+            </div>
+            
+            <!-- Vestido 3 -->
+            <div class="vestido-item overflow-hidden rounded-lg shadow-md bg-white" data-aos="fade-up" data-aos-delay="300">
+              <div class="relative overflow-hidden">
+                <img src="tul.jpeg" alt="Vestido Princesa" class="w-full h-[300px] object-cover">
+                <div class="vestido-overlay p-4">
+                  <p class="text-sm">Vestido voluminoso con tul y cristales</p>
+                </div>
+              </div>
+              <div class="p-4">
+                <h3 class="text-xl font-semibold mb-2">Vestido de Tul</h3>
+                <p class="text-gray-600 text-sm">Vestido de tul con detalles de pedrería artesanal.</p>
+              </div>
+            </div>
+            
+            <!-- Vestido 4 -->
+            <div class="vestido-item overflow-hidden rounded-lg shadow-md bg-white" data-aos="fade-up" data-aos-delay="400">
+              <div class="relative overflow-hidden">
+                <img src="sin crinolina.jpeg" alt="Vestido Vintage" class="w-full h-[300px] object-cover">
+                <div class="vestido-overlay p-4">
+                  <p class="text-sm">Inspiración vintage sin mangas</p>
+                </div>
+              </div>
+              <div class="p-4">
+                <h3 class="text-xl font-semibold mb-2">Vestido de Seda sin crinolina</h3>
+                <p class="text-gray-600 text-sm">Vestido con inspiración vintage de seda.</p>
+              </div>
+            </div>
+            
+            <!-- Vestido 5 -->
+            <div class="vestido-item overflow-hidden rounded-lg shadow-md bg-white" data-aos="fade-up" data-aos-delay="500">
+              <div class="relative overflow-hidden">
+                <img src="princesa.jpeg" alt="Vestido Boho" class="w-full h-[300px] object-cover">
+                <div class="vestido-overlay p-4">
+                  <p class="text-sm">Estilo elegantes y fabuloso</p>
+                </div>
+              </div>
+              <div class="p-4">
+                <h3 class="text-xl font-semibold mb-2">Vestido de novias estilo princesa</h3>
+                <p class="text-gray-600 text-sm">Vestido estilo princesa con detalles de pedrería artesanal.</p>
+              </div>
+            </div>
+            
+            <!-- Vestido 6 -->
+            <div class="vestido-item overflow-hidden rounded-lg shadow-md bg-white" data-aos="fade-up" data-aos-delay="600">
+              <div class="relative overflow-hidden">
+                <img src="fiesta.jpeg" alt="Vestido Moderno" class="w-full h-[300px] object-cover">
+                <div class="vestido-overlay p-4">
+                  <p class="text-sm">Diseño contemporáneo</p>
+                </div>
+              </div>
+              <div class="p-4">
+                <h3 class="text-xl font-semibold mb-2">Vestido de fiesta </h3>
+                <p class="text-gray-600 text-sm">Vestido de fiesta elegante y sofisticado </p>
+              </div>
+            </div>
+            
+            <!-- Vestido 7 -->
+            <div class="vestido-item overflow-hidden rounded-lg shadow-md bg-white" data-aos="fade-up" data-aos-delay="700">
+              <div class="relative overflow-hidden">
+                <img src="boda civil.jpeg" alt="Vestido Minimalista" class="w-full h-[300px] object-cover">
+                <div class="vestido-overlay p-4">
+                  <p class="text-sm">Vestido moderno con dos piezas transformables para la ceremonia y recepción</p>
+                </div>
+              </div>
+              <div class="p-4">
+                <h3 class="text-xl font-semibold mb-2">Vestido de boda civil</h3>
+                <p class="text-gray-600 text-sm">Diseño minimalista en satén con espalda abierta y cola desmontable.</p>
+              </div>
+            </div>
+
+            <!-- Vestido 8 -->
+            <div class="vestido-item overflow-hidden rounded-lg shadow-md bg-white" data-aos="fade-up" data-aos-delay="700">
+              <div class="relative overflow-hidden">
+                <img src="Satin.jpeg" alt="Vestido Minimalista" class="w-full h-[300px] object-cover">
+                <div class="vestido-overlay p-4">
+                  <p class="text-sm">Elegancia minimalista en satén de seda</p>
+                </div>
+              </div>
+              <div class="p-4">
+                <h3 class="text-xl font-semibold mb-2">Vestido de Saten</h3>
+                <p class="text-gray-600 text-sm">Diseño minimalista en satén con espalda abierta y cola desmontable.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div id="mision-vision" class="page">
+  <div class="mt-16 p-6 bg-white rounded-lg shadow-sm" data-aos="fade-up" data-aos-delay="500">
+    <center><h3 class="text-2xl mb-3">Porque no solo ofrecemos un servicio, construimos confianza.</h3></center>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+      <div class="text-center">
+        <i class="fas fa-bullseye text-2xl text-accent mb-2"></i>
+        <h4 class="text-lg font-semibold">Misión</h4>
+        <p class="text-gray-600 text-sm">Ofrecer una experiencia única y personalizada al elegir su vestido de novia. Nos comprometemos a proporcionar una amplia selección de vestidos de alta calidad y diseñados con atención al detalle, para que cada novia se sienta hermosa y especial en su día más importante.</p>
+      </div>
+      <div class="text-center">
+        <i class="fas fa-eye text-2xl text-accent mb-2"></i>
+        <h4 class="text-lg font-semibold">Visión</h4>
+        <p class="text-gray-600 text-sm">Ser reconocidos como la boutique de referencia en el sector de vestidos de novia, destacándonos por nuestra excelencia en el servicio al cliente, la calidad de nuestros productos y la creatividad en el diseño.</p>
+      </div>
+      <div class="text-center">
+        <i class="fas fa-balance-scale text-2xl text-accent mb-2"></i>
+        <h4 class="text-lg font-semibold">Valores y Principios</h4>
+        <p class="text-gray-600 text-sm">Te acompañamos en cada paso de tu elecciónExcelencia con mucha Pasión, Integridad, Creatividad, Empatía y sobre todo Ética y Responsabilidad, Orientación al Cliente.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+      
+        <!-- Contacto Page -->
+        <div id="contacto" class="page">
+          <div class="max-w-3xl mx-auto">
+            <h1 class="text-4xl mb-6 font-playfair text-center" data-aos="fade-up">Contáctanos</h1>
+            <p class="text-lg mb-10 text-gray-600 text-center" data-aos="fade-up" data-aos-delay="200">
+              Estamos aquí para ayudarte a encontrar el vestido de tus sueños.
+            </p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+              <div class="bg-white p-6 rounded-lg shadow-sm" data-aos="fade-right" data-aos-delay="300">
+                <h3 class="text-2xl mb-4">Información de Contacto</h3>
+                <div class="space-y-4">
+                  <div class="flex items-start">
+                    <i class="fas fa-map-marker-alt text-accent mt-1 mr-3"></i>
+                    <div>
+                      <p class="font-semibold">Dirección</p>
+                      <p class="text-gray-600">Metrocentro, Sonsonate Centro, Sonsonate.</p>
+                    </div>
+                  </div>
+                  <div class="flex items-start">
+                    <i class="fas fa-phone text-accent mt-1 mr-3"></i>
+                    <div>
+                      <p class="font-semibold">Teléfono</p>
+                      <p class="text-gray-600">+503 7767-8888 </p>
+                    </div>
+                  </div>
+                  <div class="flex items-start">
+                    
+                  </div>
+                  <div class="flex items-start">
+                    <i class="fas fa-clock text-accent mt-1 mr-3"></i>
+                    <div>
+                      <p class="font-semibold">Horarios</p>
+                      <p class="text-gray-600">Lunes a Sábado: 10:00 AM - 7:00 PM</p>
+                      <p class="text-gray-600">Domingo: Cerrado</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="mt-8">
+                  <h4 class="text-lg mb-3">Tu satisfacción es nuestra inspiración. Escribenos y con gusto te atenderemos, porque cada mensaje tuyo es una oprtunidad para crear algo especial juntos.✨</h4>
+                  
+                </div>
+              </div>
+              
+              <div class="bg-white p-6 rounded-lg shadow-sm" data-aos="fade-left" data-aos-delay="400">
+                <h3 class="text-2xl mb-4">Envíanos un Mensaje</h3>
+                <form id="contacto-form" action="/submitcontact.php" method="POST">
+                  <div class="mb-4">
+                    <label for="nombre" class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+                    <input type="text" id="nombre" name="nombre" class="form-input w-full p-2 rounded-md" placeholder="Tu nombre" required>
+                  </div>
+                  <div class="mb-4">
+                    <label for="mensaje" class="block text-sm font-medium text-gray-700 mb-1">Mensaje</label>
+                    <textarea id="mensaje" name="mensaje" rows="5" class="form-input w-full p-2 rounded-md" placeholder="¿En qué podemos ayudarte?" required></textarea>
+                  </div>
+                  <button type="submit" class="btn-primary w-full py-3 rounded-lg">
+                    Enviar Mensaje
+                    <i class="fas fa-info-circle ml-1 text-sm tooltip-trigger"></i>
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Modal for "Pedir tu Vestido" -->
+<div id="pedir-vestido-modal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+  <div class="flex items-center justify-center min-h-screen p-4">
+    <div class="fixed inset-0 bg-black opacity-50"></div>
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-md relative z-10">
+      <div class="p-6">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-2xl font-semibold">Solicita tu Vestido de Novia</h3>
+          <button id="close-pedir-modal" class="text-gray-500 hover:text-gray-700">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <form id="pedir-form">
+          <div class="space-y-4">
+            <div>
+              <label for="nombre-completo" class="block text-sm font-medium text-gray-700 mb-1">Nombre Completo</label>
+              <input type="text" id="nombre-completo" name="nombre" class="form-input w-full p-2 rounded-md" required>
+            </div>
+            <div>
+              <label for="correo" class="block text-sm font-medium text-gray-700 mb-1">Correo Electrónico</label>
+              <input type="email" id="correo" name="correo" class="form-input w-full p-2 rounded-md" required>
+            </div>
+            <div>
+              <label for="telefono" class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+              <input type="tel" id="telefono" name="telefono" class="form-input w-full p-2 rounded-md" required>
+            </div>
+            <div>
+              <label for="medidas" class="block text-sm font-medium text-gray-700 mb-1">Medidas</label>
+              <textarea id="medidas" name="medidas" rows="3" class="form-input w-full p-2 rounded-md" placeholder="Busto, cintura, cadera, altura..." required></textarea>
+            </div>
+            <div>
+              <label for="presupuesto" class="block text-sm font-medium text-gray-700 mb-1">Presupuesto Aproximado</label>
+              <input type="number" id="presupuesto" name="presupuesto" class="form-input w-full p-2 rounded-md" placeholder="MXN" required>
+            </div>
+            <div>
+              <label for="fecha-boda" class="block text-sm font-medium text-gray-700 mb-1">Fecha de la Boda</label>
+              <input type="date" id="fecha-boda" name="fecha" class="form-input w-full p-2 rounded-md" required>
+            </div>
+            <div>
+              <label for="notas-adicionales" class="block text-sm font-medium text-gray-700 mb-1">Notas Adicionales</label>
+              <textarea id="notas-adicionales" name="notas" rows="3" class="form-input w-full p-2 rounded-md"></textarea>
+            </div>
+          </div>
+          <div class="mt-6">
+            <button type="submit" class="btn-primary w-full py-3 rounded-lg">
+              Enviar Solicitud
+              <i class="fas fa-info-circle ml-1 text-sm tooltip-trigger"></i>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Modal for "Diseñar tu Vestido" -->
+<div id="disenar-vestido-modal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+  <div class="flex items-center justify-center min-h-screen p-4">
+    <div class="fixed inset-0 bg-black opacity-50"></div>
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-3xl relative z-10">
+      <div class="p-6">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-2xl font-semibold">Diseña tu Vestido</h3>
+          <button id="close-disenar-modal" class="text-gray-500 hover:text-gray-700">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="max-h-[calc(100vh-100px)] overflow-y-auto pr-4 pb-16">
+          <form id="disenar-form">
+            <div class="mb-6">
+              <p class="text-gray-600 mb-4">Sube una imagen de referencia o inspiración para tu vestido:</p>
+              <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-accent transition" id="upload-area">
+                <input type="file" id="image-upload" name="imagen" accept="image/*" class="hidden" required>
+                <div id="upload-placeholder">
+                  <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2"></i>
+                  <p class="text-gray-500">Haz clic para subir una imagen</p>
+                  <p class="text-xs text-gray-400 mt-1">o arrastra y suelta aquí</p>
+                </div>
+                <div id="upload-preview" class="hidden">
+                  <img id="preview-image" src="" alt="Vista previa" class="max-h-40 mx-auto mb-2">
+                  <p class="text-sm text-accent">Imagen cargada correctamente</p>
+                </div>
+              </div>
+            </div>
+            <div id="design-options" class="design-options">
+              <h4 class="text-lg font-medium mb-4">Personaliza tu vestido</h4>
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Número de Teléfono</label>
+                  <input type="tel" name="telefono" class="form-input w-full p-2 rounded-md" placeholder="Tu número de teléfono" required>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Talla</label>
+                  <select name="talla" class="form-input w-full p-2 rounded-md">
+                    <option>Selecciona una talla</option>
+                    <option>XS</option>
+                    <option>S</option>
+                    <option>M</option>
+                    <option>L</option>
+                    <option>XL</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1" for="indicacion">Indicación: Indícanos tus medidas para un resultado impecable y personalizado</label>
+                  <textarea id="indicacion" name="indicacion" rows="2" class="form-input w-full p-2 rounded-md" placeholder="Escribe" required></textarea>
+                  <div class="text-xs text-gray-500 mt-2 leading-relaxed bg-gray-50 p-3 rounded-md border border-gray-200">
+                    <p class="font-medium mb-1">Guía detallada para tomar medidas:</p>
+                    <p>• B – Busto: rodea la parte más ancha del pecho.</p>
+                    <p>• C – Cintura: mide la parte más estrecha de tu cintura.</p>
+                    <p>• Q – Cadera: mide la parte más ancha de tu cadera y glúteos.</p>
+                    <p>• H – Hombro: desde la base del cuello hasta donde termina el hombro.</p>
+                    <p>• EC – Escote cuello: mide el contorno alrededor de la base del cuello.</p>
+                    <p>• LM – Largo de manga: desde el hombro hasta la muñeca (con el brazo ligeramente doblado).</p>
+                    <p>• LE – Largo espalda: desde la base del cuello hasta la cintura por la espalda.</p>
+                    <p>• LD – Largo delantero: desde el hombro (cerca del cuello) hasta la cintura por el frente, pasando por el busto.</p>
+                    <p>• LC – Largo total: desde el hombro hasta donde quieres el vestido (rodilla, pantorrilla, tobillo o piso).</p>
+                    <p>• AP – Altura de pecho: desde el hombro (cerca del cuello) hasta la punta del busto.</p>
+                    <p>• DP – Distancia de pecho: de un pezón al otro.</p>
+                    <p>• CP1 Corpiño (Contorno bajo busto): mide alrededor justo debajo del busto.</p>
+                    <p>• CP2 Corpiño (Altura corpiño): desde el hombro o escote hasta la cintura (donde termina el corpiño).</p>
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de Tela</label>
+                  <select name="tela" class="form-input w-full p-2 rounded-md">
+                    <option>Selecciona una opción</option>
+                    <option>Encaje</option>
+                    <option>Satén</option>
+                    <option>Tul</option>
+                    <option>Chiffon</option>
+                    <option>Organza</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Notas adicionales</label>
+                  <textarea name="notas" rows="3" class="form-input w-full p-2 rounded-md" placeholder="Describe otros detalles que te gustaría incluir"></textarea>
+                </div>
+              </div>
+            </div>
+            <div class="mt-6">
+              <button type="submit" class="btn-primary w-full py-3 rounded-lg">
+                Enviar Diseño
+                <i class="fas fa-info-circle ml-1 text-sm tooltip-trigger"></i>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+function showSuccess() {
+  return Swal.fire({
+    icon: 'success',
+    title: '¡Guardado exitosamente!',
+    timer: 2000,
+    showConfirmButton: false,
+    position: 'top-end',
+    toast: true
+  });
+}
+AOS.init({ duration: 800, once: true });
+document.addEventListener('DOMContentLoaded', function() {
+  setTimeout(() => { document.getElementById('enter-btn').style.opacity = '1'; }, 2000);
+  document.getElementById('enter-btn').addEventListener('click', function() {
+    document.getElementById('welcome-screen').style.opacity = '0';
+    document.getElementById('welcome-screen').style.transition = 'opacity 0.5s ease';
+    setTimeout(() => {
+      document.getElementById('welcome-screen').classList.add('hidden');
+      document.getElementById('main-app').classList.remove('hidden');
+    }, 500);
+  });
+  // Navegación lateral
+  const navLinks = document.querySelectorAll('.sidebar-link');
+  const pages = document.querySelectorAll('.page');
+  navLinks.forEach(link => {
+    link.addEventListener('click', function() {
+      const pageId = this.getAttribute('data-page');
+      navLinks.forEach(link => link.classList.remove('active'));
+      this.classList.add('active');
+      pages.forEach(page => page.classList.remove('active'));
+      document.getElementById(pageId).classList.add('active');
+    });
+  });
+  // Modales
+  const pedirBtn = document.getElementById('pedir-vestido-btn');
+  const pedirModal = document.getElementById('pedir-vestido-modal');
+  const closePedirModal = document.getElementById('close-pedir-modal');
+  pedirBtn.addEventListener('click', function() { pedirModal.classList.remove('hidden'); });
+  closePedirModal.addEventListener('click', function() { pedirModal.classList.add('hidden'); });
+  const disenarBtn = document.getElementById('disenar-vestido-btn');
+  const disenarModal = document.getElementById('disenar-vestido-modal');
+  const closeDisenarModal = document.getElementById('close-disenar-modal');
+  disenarBtn.addEventListener('click', function() { disenarModal.classList.remove('hidden'); });
+  closeDisenarModal.addEventListener('click', function() { disenarModal.classList.add('hidden'); });
+  // File upload
+  const uploadArea = document.getElementById('upload-area');
+  const imageUpload = document.getElementById('image-upload');
+  const uploadPlaceholder = document.getElementById('upload-placeholder');
+  const uploadPreview = document.getElementById('upload-preview');
+  const previewImage = document.getElementById('preview-image');
+  const designOptions = document.getElementById('design-options');
+  uploadArea.addEventListener('click', function() { imageUpload.click(); });
+  imageUpload.addEventListener('change', function() {
+    if (this.files && this.files[0]) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        previewImage.src = e.target.result;
+        uploadPlaceholder.classList.add('hidden');
+        uploadPreview.classList.remove('hidden');
+        designOptions.classList.add('show');
+      }
+      reader.readAsDataURL(this.files[0]);
+    }
+  });
+  // Cerrar modales al hacer click fuera
+  window.addEventListener('click', function(e) {
+    if (e.target === pedirModal) { pedirModal.classList.add('hidden'); }
+    if (e.target === disenarModal) { disenarModal.classList.add('hidden'); }
+  });
+  // Formularios: solo mostrar mensaje de éxito y limpiar
+  document.getElementById('pedir-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    showSuccess().then(() => {
+      pedirModal.classList.add('hidden');
+      this.reset();
+    });
+  });
+  document.getElementById('disenar-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    showSuccess().then(() => {
+      disenarModal.classList.add('hidden');
+      this.reset();
+      uploadPlaceholder.classList.remove('hidden');
+      uploadPreview.classList.add('hidden');
+      designOptions.classList.remove('show');
+    });
+  });
+  document.getElementById('contacto-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    showSuccess().then(() => {
+      this.reset();
+    });
+  });
+});
+</script>
+</body>
+</html>
